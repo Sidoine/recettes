@@ -6,6 +6,7 @@
 * [Cookies](cookies.md)
 * [Crêpe à la crème de champignons](crepechampignon.md)
 * [Crêpes](crepes.md)
+* [Galette des rois](galette.md)
 * [Meringue italienne](meringueitalienne.md)
 * [Mousse au chocolat](mousseauchocolat.md)
 * [Omelette norvégienne](omelettenorvegienne.md)
