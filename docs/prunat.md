@@ -1,4 +1,4 @@
-# Pruna
+# Prunat
 
 ## Ingrédients
 
@@ -7,7 +7,7 @@
 -   1 verre de lait (20cl)
 -   1 sachet de levure
 -   75g sucre en poudre
--   1 cs d'huile d'olive ou beurre
+-   1 cs d'huile d'olive ou 20g beurre
 
 ## Recette
 
