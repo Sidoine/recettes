@@ -1,4 +1,4 @@
-# Recette des snickerdoodles
+# Snickerdoodles
 
 ## Ingrédients
 
