@@ -1,11 +1,34 @@
 import type { PrismaClient } from "@prisma/client";
+import { existsSync } from "node:fs";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const docsDirectory = path.resolve(__dirname, "../../docs");
+
+function resolveDocsDirectory(): string | null {
+  const configuredDocsDirectory = process.env.DOCS_DIRECTORY;
+
+  const candidates = [
+    // Explicit override for container/platform setups
+    configuredDocsDirectory ? path.resolve(configuredDocsDirectory) : null,
+    // Prefer the project root docs folder when app starts from repo root
+    path.resolve(process.cwd(), "docs"),
+    // Production/runtime from dist-server/server/lib -> ../../../docs
+    path.resolve(__dirname, "../../../docs"),
+    // Dev/runtime from source: server/lib -> ../../docs
+    path.resolve(__dirname, "../../docs"),
+  ];
+
+  for (const candidate of candidates) {
+    if (candidate && existsSync(candidate)) {
+      return candidate;
+    }
+  }
+
+  return null;
+}
 
 export type ImportedRecipe = {
   title: string;
@@ -163,6 +186,12 @@ export function parseMarkdownRecipe(
 }
 
 export async function readRecipesFromMarkdown(): Promise<ImportedRecipe[]> {
+  const docsDirectory = resolveDocsDirectory();
+  if (!docsDirectory) {
+    console.warn("No docs directory found. Skipping Markdown import.");
+    return [];
+  }
+
   const entries = await readdir(docsDirectory, { withFileTypes: true });
   const recipes: ImportedRecipe[] = [];
 
