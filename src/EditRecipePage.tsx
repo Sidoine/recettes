@@ -1,8 +1,8 @@
-import { type FormEvent, useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { type FormEvent, useEffect, useRef, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { fetchRecipeBySlug, updateRecipe } from "./api";
 import { useAuth } from "./AuthContext";
-import type { Recipe } from "./types";
+import type { Recipe, RecipeInput } from "./types";
 
 type RecipeFormState = {
   title: string;
@@ -41,6 +41,22 @@ function recipeToFormState(recipe: Recipe): RecipeFormState {
   };
 }
 
+function formStateToInput(formState: RecipeFormState): RecipeInput {
+  return {
+    title: formState.title.trim(),
+    summary: formState.summary.trim() || null,
+    servings: formState.servings ? Number(formState.servings) : null,
+    prepTimeMinutes: formState.prepTimeMinutes
+      ? Number(formState.prepTimeMinutes)
+      : null,
+    cookTimeMinutes: formState.cookTimeMinutes
+      ? Number(formState.cookTimeMinutes)
+      : null,
+    ingredients: toLineArray(formState.ingredients),
+    steps: toLineArray(formState.steps),
+  };
+}
+
 export default function EditRecipePage() {
   const navigate = useNavigate();
   const { slug = "" } = useParams<{ slug: string }>();
@@ -49,6 +65,7 @@ export default function EditRecipePage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const lastSavedSignatureRef = useRef("");
   const [formState, setFormState] = useState<RecipeFormState>({
     title: "",
     summary: "",
@@ -58,6 +75,23 @@ export default function EditRecipePage() {
     ingredients: "",
     steps: "",
   });
+  const currentSignature = JSON.stringify(formStateToInput(formState));
+  const hasUnsavedChanges = currentSignature !== lastSavedSignatureRef.current;
+  const saveStatus = submitting
+    ? "saving"
+    : errorMessage
+      ? "error"
+      : hasUnsavedChanges
+        ? "dirty"
+        : "saved";
+  const saveStatusLabel =
+    saveStatus === "saving"
+      ? "Enregistrement..."
+      : saveStatus === "error"
+        ? "Erreur de sauvegarde"
+        : saveStatus === "dirty"
+          ? "Modifications non enregistrées"
+          : "Tous les changements sont enregistrés";
 
   useEffect(() => {
     if (!authLoading && user?.role !== "ADMIN") {
@@ -79,8 +113,12 @@ export default function EditRecipePage() {
       try {
         const loadedRecipe = await fetchRecipeBySlug(slug);
         if (!cancelled) {
+          const nextFormState = recipeToFormState(loadedRecipe);
           setRecipe(loadedRecipe);
-          setFormState(recipeToFormState(loadedRecipe));
+          setFormState(nextFormState);
+          lastSavedSignatureRef.current = JSON.stringify(
+            formStateToInput(nextFormState),
+          );
         }
       } catch (error) {
         if (!cancelled) {
@@ -102,36 +140,66 @@ export default function EditRecipePage() {
     };
   }, [slug]);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!recipe) return;
+  async function saveFormState(nextState: RecipeFormState): Promise<boolean> {
+    if (!recipe || submitting) {
+      return false;
+    }
+
+    const payload = formStateToInput(nextState);
+    const nextSignature = JSON.stringify(payload);
+
+    if (nextSignature === lastSavedSignatureRef.current) {
+      return true;
+    }
 
     setSubmitting(true);
     setErrorMessage(null);
 
     try {
-      await updateRecipe(recipe.id, {
-        title: formState.title.trim(),
-        summary: formState.summary.trim() || null,
-        servings: formState.servings ? Number(formState.servings) : null,
-        prepTimeMinutes: formState.prepTimeMinutes
-          ? Number(formState.prepTimeMinutes)
-          : null,
-        cookTimeMinutes: formState.cookTimeMinutes
-          ? Number(formState.cookTimeMinutes)
-          : null,
-        ingredients: toLineArray(formState.ingredients),
-        steps: toLineArray(formState.steps),
-      });
-
-      navigate(`/recettes/${slug}`);
+      const updatedRecipe = await updateRecipe(recipe.id, payload);
+      setRecipe(updatedRecipe);
+      lastSavedSignatureRef.current = nextSignature;
+      return true;
     } catch (error) {
       setErrorMessage(
         error instanceof Error ? error.message : "Enregistrement impossible.",
       );
+      return false;
     } finally {
       setSubmitting(false);
     }
+  }
+
+  function handleFormBlur(): void {
+    void saveFormState(formState);
+  }
+
+  function updateServings(delta: number): void {
+    if (!recipe) {
+      return;
+    }
+
+    const baseValue = formState.servings
+      ? Number(formState.servings)
+      : recipe.servings || 1;
+    const currentValue = Number.isFinite(baseValue) ? baseValue : 1;
+    const nextValue = Math.max(1, Math.round(currentValue + delta));
+    const nextFormState = { ...formState, servings: String(nextValue) };
+
+    setFormState(nextFormState);
+    void saveFormState(nextFormState);
+  }
+
+  async function handleBackToRecipe(): Promise<void> {
+    const wasSaved = await saveFormState(formState);
+    if (wasSaved) {
+      navigate(`/recettes/${slug}`);
+    }
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    await saveFormState(formState);
   }
 
   if (loading) {
@@ -159,12 +227,15 @@ export default function EditRecipePage() {
           <p className="hero-copy">
             Mettez à jour les informations de cette recette.
           </p>
-          <Link
+          <button
+            type="button"
             className="action-link action-link-secondary"
-            to={`/recettes/${slug}`}
+            onClick={() => {
+              void handleBackToRecipe();
+            }}
           >
             Retour à la recette
-          </Link>
+          </button>
         </div>
       </header>
 
@@ -173,7 +244,17 @@ export default function EditRecipePage() {
       )}
 
       <section className="panel form-page-panel">
-        <form className="recipe-form" onSubmit={handleSubmit}>
+        <p
+          className={`save-indicator save-indicator-${saveStatus}`}
+          aria-live="polite"
+        >
+          {saveStatusLabel}
+        </p>
+        <form
+          className="recipe-form"
+          onSubmit={handleSubmit}
+          onBlur={handleFormBlur}
+        >
           <label>
             <span>Titre</span>
             <input
@@ -205,17 +286,37 @@ export default function EditRecipePage() {
           <div className="inline-fields">
             <label>
               <span>Portions</span>
-              <input
-                type="number"
-                min="1"
-                value={formState.servings}
-                onChange={(event) =>
-                  setFormState((current) => ({
-                    ...current,
-                    servings: event.target.value,
-                  }))
-                }
-              />
+              <div className="portions-control" style={{ marginTop: 0 }}>
+                <button
+                  type="button"
+                  className="portions-step"
+                  onClick={() => updateServings(-1)}
+                  aria-label="Réduire les portions"
+                  title="Réduire les portions"
+                >
+                  -
+                </button>
+                <input
+                  type="number"
+                  min="1"
+                  value={formState.servings}
+                  onChange={(event) =>
+                    setFormState((current) => ({
+                      ...current,
+                      servings: event.target.value,
+                    }))
+                  }
+                />
+                <button
+                  type="button"
+                  className="portions-step"
+                  onClick={() => updateServings(1)}
+                  aria-label="Augmenter les portions"
+                  title="Augmenter les portions"
+                >
+                  +
+                </button>
+              </div>
             </label>
 
             <label>
@@ -278,10 +379,6 @@ export default function EditRecipePage() {
               }
             />
           </label>
-
-          <button className="submit-button" type="submit" disabled={submitting}>
-            {submitting ? "Enregistrement…" : "Enregistrer les modifications"}
-          </button>
         </form>
       </section>
     </div>

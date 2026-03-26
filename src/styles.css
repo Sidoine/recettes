@@ -376,15 +376,36 @@ textarea {
   margin-top: 6px;
 }
 
+.portions-step {
+  border: 0;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 8px;
+  background: rgba(196, 91, 45, 0.15);
+  color: var(--accent-dark);
+  cursor: pointer;
+  font-weight: 800;
+  font-size: 1.1rem;
+  line-height: 1;
+  transition: background 160ms ease;
+}
+
+.portions-step:hover {
+  background: rgba(196, 91, 45, 0.25);
+}
+
 .portions-control input {
   display: block;
-  flex: 1;
+  min-width: 0;
+  width: 72px;
   border: 1px solid rgba(112, 84, 58, 0.16);
   background: rgba(255, 255, 255, 0.72);
   border-radius: 10px;
   padding: 8px 10px;
   font-size: 1rem;
   color: inherit;
+  text-align: center;
 }
 
 .portions-control input:focus {
@@ -470,6 +491,28 @@ textarea {
 
 .form-page-panel {
   padding: 24px;
+}
+
+.save-indicator {
+  margin: 0 0 12px;
+  font-size: 0.9rem;
+  color: rgba(35, 23, 15, 0.68);
+}
+
+.save-indicator-saving {
+  color: rgba(140, 82, 37, 0.95);
+}
+
+.save-indicator-saved {
+  color: rgba(44, 116, 71, 0.95);
+}
+
+.save-indicator-dirty {
+  color: rgba(117, 73, 32, 0.95);
+}
+
+.save-indicator-error {
+  color: rgba(152, 46, 32, 0.95);
 }
 
 @media (max-width: 900px) {

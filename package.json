@@ -4,10 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"npm:dev:server\" \"npm:dev:client\"",
+    "dev": "concurrently \"yarn dev:server\" \"yarn dev:client\"",
     "dev:server": "tsx watch server/index.ts",
     "dev:client": "vite",
-    "build": "npm run build:server && npm run build:client",
+    "build": "yarn build:server && yarn build:client",
     "build:server": "tsc -p tsconfig.server.json",
     "build:client": "vite build",
     "start": "prisma migrate deploy && node dist-server/server/index.js",
@@ -45,5 +45,6 @@
     "tsx": "^4.19.3",
     "typescript": "^5.8.2",
     "vite": "^6.2.2"
-  }
+  },
+  "packageManager": "yarn@1.22.22"
 }

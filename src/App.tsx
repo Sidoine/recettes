@@ -27,6 +27,16 @@ export default function App() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const deferredSearch = useDeferredValue(search);
+  const currentServings = displayedServings ?? selectedRecipe?.servings ?? null;
+
+  function setServingsWithBounds(nextValue: number | null): void {
+    if (nextValue === null || Number.isNaN(nextValue)) {
+      setDisplayedServings(null);
+      return;
+    }
+
+    setDisplayedServings(Math.max(1, Math.round(nextValue)));
+  }
 
   // Fonction pour adapter les quantités d'ingrédients en fonction des portions
   function scaleIngredient(ingredient: string, ratio: number): string {
@@ -267,20 +277,49 @@ export default function App() {
                       <span>Portions</span>
                       {selectedRecipe.servings ? (
                         <div className="portions-control">
+                          <button
+                            type="button"
+                            className="portions-step"
+                            onClick={() =>
+                              setServingsWithBounds(
+                                (currentServings ?? selectedRecipe.servings) -
+                                  1,
+                              )
+                            }
+                            aria-label="Réduire le nombre de portions"
+                            title="Réduire les portions"
+                          >
+                            -
+                          </button>
                           <input
                             type="number"
                             min="1"
-                            value={displayedServings ?? selectedRecipe.servings}
+                            value={currentServings}
                             onChange={(event) =>
-                              setDisplayedServings(
+                              setServingsWithBounds(
                                 event.target.value
                                   ? Number(event.target.value)
                                   : null,
                               )
                             }
                           />
+                          <button
+                            type="button"
+                            className="portions-step"
+                            onClick={() =>
+                              setServingsWithBounds(
+                                (currentServings ?? selectedRecipe.servings) +
+                                  1,
+                              )
+                            }
+                            aria-label="Augmenter le nombre de portions"
+                            title="Augmenter les portions"
+                          >
+                            +
+                          </button>
                           {displayedServings !== selectedRecipe.servings && (
                             <button
+                              type="button"
                               className="reset-portions"
                               onClick={() =>
                                 setDisplayedServings(selectedRecipe.servings)
