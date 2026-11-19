@@ -5,6 +5,7 @@
 * [Bun](bun.md)
 * [Gâteau à la coca](coca.md)
 * [Cookies](cookies.md)
+* [Endives au jambon](endives-au-jambon.md)
 * [Crêpe à la crème de champignons](crepechampignon.md)
 * [Crêpes](crepes.md)
 * [Flammekueche](flammekueche.md)
