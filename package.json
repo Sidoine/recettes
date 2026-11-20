@@ -14,7 +14,6 @@
     "postinstall": "prisma generate",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "db:seed": "tsx scripts/import-markdown.ts",
     "db:studio": "prisma studio"
   },
   "dependencies": {

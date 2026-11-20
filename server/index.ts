@@ -16,7 +16,6 @@ import {
   verifyToken,
 } from "./auth.js";
 import { prisma } from "./db.js";
-import { seedRecipesIfEmpty } from "./lib/recipe-import.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -361,12 +360,6 @@ app.use(
 
 async function startServer(): Promise<void> {
   await prisma.$connect();
-  const importedCount = await seedRecipesIfEmpty(prisma);
-
-  if (importedCount > 0) {
-    console.log(`Imported ${importedCount} recipes from Markdown.`);
-  }
-
   app.listen(port, () => {
     console.log(`Server listening on http://localhost:${port}`);
   });

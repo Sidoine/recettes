@@ -17,11 +17,9 @@ Application full-stack pour enregistrer et consulter des recettes de cuisine.
 
 L'API demarre sur `http://localhost:4000` et le frontend sur `http://localhost:5173`.
 
-## Import du contenu existant
+## Donnees et recettes
 
-Au premier demarrage du serveur, si la table `Recipe` est vide, les fichiers Markdown du dossier `docs/` sont importes automatiquement.
-
-Vous pouvez aussi relancer l'import manuellement avec `yarn db:seed`.
+Les recettes sont stockees dans PostgreSQL et gerees depuis l'application. Le demarrage du serveur ne depend d'aucun fichier de recettes local.
 
 ## Scripts utiles
 

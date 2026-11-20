@@ -1,28 +1,15 @@
 ---
 name: ajout-recette
-description: Ajoute une recette de cuisine au dépôt recettes en créant sa page Markdown et en la reliant à la navigation de docs. À utiliser lorsqu'on demande d'ajouter ou d'enregistrer une recette dans ce projet.
+description: Ajoute une recette dans l'application Recettes, dont les recettes sont stockées dans PostgreSQL. À utiliser lorsqu'on demande d'ajouter ou d'enregistrer une recette dans ce projet.
 ---
 
 # Ajouter une recette
 
-## Procédure
+## Stockage et procédure
 
-1. Choisir un titre français clair et créer un slug ASCII en minuscules, sans accents, avec des mots séparés par des tirets (par exemple `endives-au-jambon`).
-2. Créer `docs/<slug>.md` en reprenant le format des recettes existantes :
+Les recettes sont des enregistrements PostgreSQL gérés par l'application. Ne pas créer de fichiers Markdown et ne pas utiliser de seed ou d'import de fichiers pour ajouter une recette.
 
-   ```markdown
-   # Titre de la recette
-
-   ## Ingrédients (pour N personnes)
-
-   * Quantité et ingrédient
-
-   ## Recette
-
-   * Étape de préparation
-   * Étape de cuisson
-   ```
-
-3. Donner des quantités cohérentes et préciser le nombre de personnes quand il est connu. Écrire les étapes dans l'ordre, avec températures et durées explicites lorsqu'elles sont utiles. Ne pas inventer de source ou d'attribution.
-4. Ajouter un lien vers la nouvelle page dans `docs/_sidebar.md`, en respectant le format `* [Titre](slug.md)` et l'organisation existante.
-5. Vérifier que le nom du fichier correspond au lien et que le Markdown possède bien un titre, une section ingrédients et une section recette. Les fichiers Markdown de `docs/` sont importés automatiquement par l'application : ne pas modifier la base de données ni lancer de seed pour une simple modification de fichier.
+1. Utiliser le formulaire « Ajouter une recette » de l'application avec une session administrateur. Le formulaire écrit dans la base via l'API protégée.
+2. Fournir un titre français clair, un résumé facultatif, le nombre de personnes, les temps de préparation et de cuisson si connus, les ingrédients et les étapes.
+3. Donner des quantités cohérentes et écrire les étapes dans l'ordre, avec températures et durées explicites lorsqu'elles sont utiles. Ne pas inventer de source ou d'attribution.
+4. Vérifier que la recette apparaît dans l'application après enregistrement. Si l'accès administrateur n'est pas disponible, demander à l'utilisateur de l'ajouter via l'application plutôt que de contourner l'authentification.
